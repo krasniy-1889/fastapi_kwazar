@@ -4,6 +4,7 @@ from sqlalchemy.orm.base import Mapped
 from sqlalchemy.sql import func
 
 from app.models import Base
+from app.users.schema import UserSchema
 
 
 class User(Base):
@@ -15,3 +16,11 @@ class User(Base):
     registration_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    def to_read_model(self) -> UserSchema:
+        return UserSchema(
+            id=self.id,
+            username=self.username,
+            email=self.email,
+            registration_date=self.registration_date,
+        )
