@@ -16,6 +16,8 @@ pytest = "^8.2.2"
 aiosqlite = "^0.20.0"
 greenlet = "^3.0.3"
 loguru = "^0.7.2"
+pandas = "^2.2.2"
+scikit-learn = "^1.5.1"
 
 
 [build-system]

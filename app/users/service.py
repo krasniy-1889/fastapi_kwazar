@@ -1,11 +1,11 @@
 import pandas as pd
 from fastapi.exceptions import HTTPException
-from loguru import logger
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 from starlette import status
 
+from app.database.session import sync_engine
 from app.services.unitofwork import IUnitOfWork
 from app.users.schema import UserSchemaAdd, UserSchemaEdit
 
@@ -109,7 +109,6 @@ class UserService:
     ):
         # Получаем домен, если была отправлена почтв
         domain: str = email_domain.split("@")[-1]
-        logger.debug(domain)
         async with uow:
             return await uow.users.count_users_with_specific_email_domain(domain)
 
@@ -118,6 +117,47 @@ class VisitAnalyticService:
     """
     Класс для анализа на основе машинного обучения,
     который предсказывает активность пользователя в следующем месяце
+
+    P.S. По хорошему нужно ml вынести в отдельный микросервис или отдельное приложение
+    Для простоты будет тут
+
+    P.S.S. Без понятия как тренировать модель, никогда не работал с sklearn
+    То что ниже, это взято с CHATGPT. Но я все же решил, что не буду эту часть писать.
+    Даже если будет работать, я не буду знать как.
     """
 
-    ...
+    async def execute(self):
+        visits_df = pd.read_sql_table("visits", sync_engine)
+        # Добавляем признак "активный в следующем месяце"
+        visits_df["active_next_month"] = visits_df.groupby("user_id")[
+            "visit_date"
+        ].apply(lambda x: (x.max() + pd.Timedelta(days=30)) > pd.Timestamp("now"))
+
+        # Преобразуем данные в формат, подходящий для модели машинного обучения
+        X = (
+            visits_df[["visit_date", "duration", "pages_visited", "traffic_source"]]
+            .groupby("user_id")
+            .agg(["count", "mean", "max", "min"])
+            .reset_index()
+        )
+        X.columns = ["_".join(col) for col in X.columns.ravel()]
+        y = (
+            visits_df["active_next_month"]
+            .groupby("user_id")
+            .max()
+            .reset_index()["active_next_month"]
+        )
+
+        # Разбиваем данные на обучающую и тестовую выборки
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+
+        # Обучаем модель
+        model = LogisticRegression()
+        model.fit(X_train, y_train)
+
+        # Проверяем модель на тестовой выборке
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        confusion_matrix(y_test, y_pred)
