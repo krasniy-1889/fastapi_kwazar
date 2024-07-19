@@ -61,9 +61,26 @@ class UserRepository(AbstractRepository):
         stmt = select(self.model).filter(
             self.model.registration_date >= func.datetime("now", f"-{days} days")
         )
-        logger.debug(stmt)
 
         res = await self.session.execute(stmt)
         res = [row[0].to_read_model() for row in res.all()]
 
         return res
+
+    async def count_users_with_specific_email_domain(self, email_domain: str) -> int:
+        """
+        Подсчитывает количество юзеров у которых email имеет определнный домен
+        Например [gmail.com, yandex.ru, mail.ru]
+
+        :param email_domain: Домен почты
+        :type email_domain: str
+        :return: UserSchema
+        :rtype: _type_
+        """
+        stmt = select(func.count(self.model.id)).filter(
+            self.model.email.endswith(email_domain)
+        )
+
+        res = await self.session.execute(stmt)
+
+        return res.scalar_one()

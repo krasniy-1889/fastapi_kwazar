@@ -16,6 +16,8 @@ class UserSchemaAdd(BaseModel):
     email: EmailStr
 
 
-class UserSchemaEdit(BaseModel):
-    username: str
-    email: EmailStr
+class UserSchemaEdit(UserSchemaAdd): ...
+
+
+class EmailSchema(BaseModel):
+    email: str

@@ -2,9 +2,10 @@ from typing import List
 
 from fastapi import Query
 from fastapi.routing import APIRouter
+from loguru import logger
 
 from app.api.dependecies import UOWDep
-from app.users.schema import UserSchema, UserSchemaAdd, UserSchemaEdit
+from app.users.schema import EmailSchema, UserSchema, UserSchemaAdd, UserSchemaEdit
 from app.users.service import UserService
 
 route = APIRouter(prefix="/user", tags=["Users"])
@@ -16,25 +17,6 @@ async def add_user(
     uow: UOWDep,
 ):
     user = await UserService().add_user(uow, user)
-    return user
-
-
-@route.post("/{user_id}")
-async def edit_user(
-    user_id: int,
-    user: UserSchemaEdit,
-    uow: UOWDep,
-):
-    user = await UserService().edit_user(user_id, uow, user)
-    return user
-
-
-@route.delete("/{user_id}")
-async def delete_user(
-    user_id: int,
-    uow: UOWDep,
-):
-    user = await UserService().delete_user(user_id, uow)
     return user
 
 
@@ -57,7 +39,7 @@ async def check_user(
     return res
 
 
-@route.post("/longest_usernames")
+@route.get("/longest_usernames")
 async def users_with_longest_username(
     uow: UOWDep,
     limit: int = Query(gt=0, le=100, default=10),
@@ -78,3 +60,47 @@ async def user_by_last_days(
     """
     users = await UserService().find_latest_users_by_days(uow, days)
     return users
+
+
+@route.post("/count_by_email_domain")
+async def count_users_by_email_domain(
+    email_schema: EmailSchema,
+    uow: UOWDep,
+):
+    """
+    Подсчитывает количество юзеров у которых email имеет определнный домен
+    Например [gmail.com, yandex.ru, mail.ru]
+
+    :param email_domain: Домен почты
+    :type email_domain: str
+    """
+
+    # Не полностью понял, доля юзеров.
+    # Это нужно было в % соотнешении посчитать или простое количество с этим доменом
+    # Этот код только считает кол. юзеров с таким доменом
+    users_count = await UserService().count_users_by_email_domain(
+        uow, email_schema.email
+    )
+    return {
+        "email_domain": email_schema.email,
+        "users_count": users_count,
+    }
+
+
+@route.post("/{user_id}")
+async def edit_user(
+    user_id: int,
+    user: UserSchemaEdit,
+    uow: UOWDep,
+):
+    user = await UserService().edit_user(user_id, uow, user)
+    return user
+
+
+@route.delete("/{user_id}")
+async def delete_user(
+    user_id: int,
+    uow: UOWDep,
+):
+    user = await UserService().delete_user(user_id, uow)
+    return user

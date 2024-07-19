@@ -1,5 +1,9 @@
+import pandas as pd
 from fastapi.exceptions import HTTPException
 from loguru import logger
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
 from starlette import status
 
 from app.services.unitofwork import IUnitOfWork
@@ -97,3 +101,23 @@ class UserService:
     ):
         async with uow:
             return await uow.users.find_latest_users_by_days(days)
+
+    async def count_users_by_email_domain(
+        self,
+        uow: IUnitOfWork,
+        email_domain: str,
+    ):
+        # Получаем домен, если была отправлена почтв
+        domain: str = email_domain.split("@")[-1]
+        logger.debug(domain)
+        async with uow:
+            return await uow.users.count_users_with_specific_email_domain(domain)
+
+
+class VisitAnalyticService:
+    """
+    Класс для анализа на основе машинного обучения,
+    который предсказывает активность пользователя в следующем месяце
+    """
+
+    ...
