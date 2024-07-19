@@ -1,0 +1,17 @@
+*.log
+*.pot
+*.pyc
+.idea
+__pycache__
+venv
+.env.dev
+kwazar.sqlite3
+media
+minio
+backup
+data
+# macOS
+.DS_Store
+# IDE
+.vscode
+
