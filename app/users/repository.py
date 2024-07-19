@@ -49,3 +49,21 @@ class UserRepository(AbstractRepository):
         res = [row[0].to_read_model() for row in res.all()]
 
         return res
+
+    async def find_latest_users_by_days(self, days: int):
+        """Находит пользователей которые были зарегстрированы за последние дни
+
+        :param days: Дни
+        :type days: int
+        :return: UserSchema
+        :rtype: _type_
+        """
+        stmt = select(self.model).filter(
+            self.model.registration_date >= func.datetime("now", f"-{days} days")
+        )
+        logger.debug(stmt)
+
+        res = await self.session.execute(stmt)
+        res = [row[0].to_read_model() for row in res.all()]
+
+        return res

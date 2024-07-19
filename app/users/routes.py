@@ -45,18 +45,15 @@ async def find_users(
     offset: int = Query(ge=0, default=0),
 ):
     users = await UserService().find_all(uow, limit, offset)
-    # return {"user_id": user_id}
     return users
 
 
-# @route.get("/users", response_model=UserSchema)
 @route.post("/check")
 async def check_user(
     user: UserSchemaAdd,
     uow: UOWDep,
 ):
     res = await UserService().check_user(uow, user)
-    # return {"user_id": user_id}
     return res
 
 
@@ -66,4 +63,18 @@ async def users_with_longest_username(
     limit: int = Query(gt=0, le=100, default=10),
 ):
     users = await UserService().find_users_with_longest_username(uow, limit)
+    return users
+
+
+@route.get("/by_last_days")
+async def user_by_last_days(
+    uow: UOWDep,
+    days: int = Query(gt=0, le=100, default=1),
+):
+    """Находит пользователей которые были зарегстрированы за последние дни
+
+    :param days: Дни
+    :type days: int
+    """
+    users = await UserService().find_latest_users_by_days(uow, days)
     return users

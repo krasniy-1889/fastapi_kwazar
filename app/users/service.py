@@ -89,3 +89,11 @@ class UserService:
     ):
         async with uow:
             return await uow.users.find_users_with_longest_username(limit)
+
+    async def find_latest_users_by_days(
+        self,
+        uow: IUnitOfWork,
+        days: int,
+    ):
+        async with uow:
+            return await uow.users.find_latest_users_by_days(days)
