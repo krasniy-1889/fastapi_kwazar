@@ -24,6 +24,9 @@ class IUnitOfWork(ABC):
     async def rollback(self): ...
 
 
+# Тут идет инициализация всех репозиториев при вызове класса
+# Тут стоит вопрос оптимизации. По сути, стоимость инита классов маленькая, но если их будет больше
+# и вопрос станет ребром, можно сделать через @property
 class UnitOfWork:
     def __init__(self):
         self.session = async_session_maker
@@ -43,3 +46,30 @@ class UnitOfWork:
 
     async def rollback(self):
         await self.session.rollback()
+
+
+# @property repo init variant
+class UnitOfWork__TEST:
+    def __init__(self):
+        self.session = async_session_maker
+
+        self._users = None
+
+    async def __aenter__(self):
+        self.session = self.session()
+
+    async def __aexit__(self, *args):
+        await self.rollback()
+        await self.session.close()
+
+    async def commit(self):
+        await self.session.commit()
+
+    async def rollback(self):
+        await self.session.rollback()
+
+    @property
+    def users(self):
+        if self._users is None:
+            self._users = UserRepository(self.session)
+        return self._users
