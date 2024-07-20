@@ -1,6 +1,8 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.users.schema import UserSchema
+
 
 class AbstractRepository:
     model = None
@@ -8,17 +10,17 @@ class AbstractRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def add_one(self, data: dict) -> int:
+    async def add_one(self, data: dict):
         stmt = insert(self.model).values(**data).returning(self.model)
         res = await self.session.execute(stmt)
         return res.scalar_one().to_read_model()
 
-    async def edit_one(self, id: int, data: dict) -> int:
+    async def edit_one(self, id: int, data: dict):
         stmt = update(self.model).values(**data).filter_by(id=id).returning(self.model)
         res = await self.session.execute(stmt)
         return res.scalar_one().to_read_model()
 
-    async def delete_one(self, id: int) -> int:
+    async def delete_one(self, id: int):
         stmt = delete(self.model).filter_by(id=id).returning(self.model)
         res = await self.session.execute(stmt)
         return res.scalar_one().to_read_model()

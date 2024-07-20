@@ -1,16 +1,20 @@
-from typing import List
-
 from fastapi import Query
 from fastapi.routing import APIRouter
 
 from app.api.dependecies import UOWDep
-from app.users.schema import EmailSchema, UserSchema, UserSchemaAdd, UserSchemaEdit
+from app.users.schema import (
+    EmailSchema,
+    UserCountByEmailDomainSchema,
+    UserSchema,
+    UserSchemaAdd,
+    UserSchemaEdit,
+)
 from app.users.service import UserService
 
 route = APIRouter(prefix="/user", tags=["Users"])
 
 
-@route.post("/")
+@route.post("/", response_model=UserSchema)
 async def add_user(
     user: UserSchemaAdd,
     uow: UOWDep,
@@ -19,7 +23,7 @@ async def add_user(
     return user
 
 
-@route.get("/all", response_model=List[UserSchema])
+@route.get("/all", response_model=list[UserSchema])
 async def find_users(
     uow: UOWDep,
     limit: int = Query(gt=0, le=100, default=10),
@@ -29,7 +33,7 @@ async def find_users(
     return users
 
 
-@route.post("/check")
+@route.post("/check", response_model=UserSchema)
 async def check_user(
     user: UserSchemaAdd,
     uow: UOWDep,
@@ -39,7 +43,7 @@ async def check_user(
     return res
 
 
-@route.get("/longest_usernames")
+@route.get("/longest_usernames", response_model=list[UserSchema])
 async def users_with_longest_username(
     uow: UOWDep,
     limit: int = Query(gt=0, le=100, default=10),
@@ -49,7 +53,7 @@ async def users_with_longest_username(
     return users
 
 
-@route.get("/by_last_days")
+@route.get("/by_last_days", response_model=list[UserSchema])
 async def user_by_last_days(
     uow: UOWDep,
     days: int = Query(gt=0, le=100, default=1),
@@ -63,7 +67,7 @@ async def user_by_last_days(
     return users
 
 
-@route.post("/count_by_email_domain")
+@route.post("/count_by_email_domain", response_model=UserCountByEmailDomainSchema)
 async def count_users_by_email_domain(
     email_schema: EmailSchema,
     uow: UOWDep,
@@ -88,7 +92,7 @@ async def count_users_by_email_domain(
     }
 
 
-@route.get("/{user_id}")
+@route.get("/{user_id}", response_model=UserSchema)
 async def find_user(
     user_id: int,
     uow: UOWDep,
@@ -97,7 +101,7 @@ async def find_user(
     return user
 
 
-@route.post("/{user_id}")
+@route.post("/{user_id}", response_model=UserSchema)
 async def edit_user(
     user_id: int,
     user: UserSchemaEdit,
@@ -107,7 +111,15 @@ async def edit_user(
     return user
 
 
-@route.delete("/{user_id}")
+@route.delete("/{user_id}", response_model=UserSchema)
+async def delete_user(
+    user_id: int,
+    uow: UOWDep,
+):
+    user = await UserService().delete_user(user_id, uow)
+    return user
+
+
 async def delete_user(
     user_id: int,
     uow: UOWDep,

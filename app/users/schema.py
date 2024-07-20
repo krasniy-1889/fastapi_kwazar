@@ -24,3 +24,8 @@ class UserSchemaEdit(BaseModel):
 
 class EmailSchema(BaseModel):
     email: str
+
+
+class UserCountByEmailDomainSchema(BaseModel):
+    email_domain: str
+    users_count: int

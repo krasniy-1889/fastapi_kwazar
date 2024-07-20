@@ -7,7 +7,7 @@ from starlette import status
 
 from app.database.session import sync_engine
 from app.services.unitofwork import IUnitOfWork
-from app.users.schema import UserSchemaAdd, UserSchemaEdit
+from app.users.schema import UserSchema, UserSchemaAdd, UserSchemaEdit
 
 
 class UserService:
@@ -15,7 +15,7 @@ class UserService:
         self,
         uow: IUnitOfWork,
         user: UserSchemaAdd,
-    ):
+    ) -> UserSchema:
         user_dict = user.model_dump()
         async with uow:
             exists = await uow.users.check_user(user.username, user.email)
@@ -25,16 +25,16 @@ class UserService:
                     detail="Юзер с таким username или email уже существует",
                 )
 
-            user_id = await uow.users.add_one(user_dict)
+            user = await uow.users.add_one(user_dict)
             await uow.commit()
-            return user_id
+            return user
 
     async def edit_user(
         self,
         id: int,
         uow: IUnitOfWork,
         user: UserSchemaEdit,
-    ):
+    ) -> UserSchema:
         async with uow:
             exists = await uow.users.find_one(id=id)
             if not exists:
@@ -49,21 +49,21 @@ class UserService:
         self,
         id: int,
         uow: IUnitOfWork,
-    ):
+    ) -> UserSchema:
         async with uow:
             exists = await uow.users.find_one(id=id)
             if not exists:
                 raise HTTPException(status_code=404, detail="Юзера не существует")
 
-            user_id = await uow.users.delete_one(id)
+            user = await uow.users.delete_one(id)
             await uow.commit()
-            return user_id
+            return user
 
     async def find_user(
         self,
         user_id: int,
         uow: IUnitOfWork,
-    ):
+    ) -> UserSchema:
         async with uow:
             user = await uow.users.find_one(id=user_id)
             if user is None:
@@ -74,7 +74,7 @@ class UserService:
         self,
         uow: IUnitOfWork,
         user: UserSchemaAdd,
-    ):
+    ) -> UserSchema:
         async with uow:
             return await uow.users.check_user(user.username, user.email)
 
@@ -83,7 +83,7 @@ class UserService:
         uow: IUnitOfWork,
         limit: int,
         offset: int,
-    ):
+    ) -> list[UserSchema]:
         async with uow:
             return await uow.users.find_all(limit, offset)
 
@@ -91,7 +91,7 @@ class UserService:
         self,
         uow: IUnitOfWork,
         limit: int,
-    ):
+    ) -> list[UserSchema]:
         async with uow:
             return await uow.users.find_users_with_longest_username(limit)
 
@@ -99,7 +99,7 @@ class UserService:
         self,
         uow: IUnitOfWork,
         days: int,
-    ):
+    ) -> list[UserSchema]:
         async with uow:
             return await uow.users.find_latest_users_by_days(days)
 
