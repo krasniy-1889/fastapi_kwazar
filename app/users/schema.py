@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 from pydantic.networks import EmailStr
@@ -16,7 +17,9 @@ class UserSchemaAdd(BaseModel):
     email: EmailStr
 
 
-class UserSchemaEdit(UserSchemaAdd): ...
+class UserSchemaEdit(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
 class EmailSchema(BaseModel):

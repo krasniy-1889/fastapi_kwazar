@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import Query
 from fastapi.routing import APIRouter
-from loguru import logger
 
 from app.api.dependecies import UOWDep
 from app.users.schema import EmailSchema, UserSchema, UserSchemaAdd, UserSchemaEdit
@@ -35,6 +34,7 @@ async def check_user(
     user: UserSchemaAdd,
     uow: UOWDep,
 ):
+    """Проверяет наличие юзера"""
     res = await UserService().check_user(uow, user)
     return res
 
@@ -44,6 +44,7 @@ async def users_with_longest_username(
     uow: UOWDep,
     limit: int = Query(gt=0, le=100, default=10),
 ):
+    """Находит юзеров с самыми длинным username"""
     users = await UserService().find_users_with_longest_username(uow, limit)
     return users
 
@@ -85,6 +86,15 @@ async def count_users_by_email_domain(
         "email_domain": email_schema.email,
         "users_count": users_count,
     }
+
+
+@route.get("/{user_id}")
+async def find_user(
+    user_id: int,
+    uow: UOWDep,
+):
+    user = await UserService().find_user(user_id, uow)
+    return user
 
 
 @route.post("/{user_id}")

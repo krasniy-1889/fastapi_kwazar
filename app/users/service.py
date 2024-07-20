@@ -40,7 +40,7 @@ class UserService:
             if not exists:
                 raise HTTPException(status_code=404, detail="Юзера не существует")
 
-            user_dict = user.model_dump()
+            user_dict = user.model_dump(exclude_none=True)
             res = await uow.users.edit_one(id, user_dict)
             await uow.commit()
             return res
@@ -61,13 +61,14 @@ class UserService:
 
     async def find_user(
         self,
+        user_id: int,
         uow: IUnitOfWork,
-        user: UserSchemaAdd,
     ):
         async with uow:
-            user_id = await uow.users.find_one(username="asdasd")
-            await uow.commit()
-            return user_id
+            user = await uow.users.find_one(id=user_id)
+            if user is None:
+                raise HTTPException(status_code=404, detail="Юзера не существует")
+            return user
 
     async def check_user(
         self,
