@@ -118,11 +118,3 @@ async def delete_user(
 ):
     user = await UserService().delete_user(user_id, uow)
     return user
-
-
-async def delete_user(
-    user_id: int,
-    uow: UOWDep,
-):
-    user = await UserService().delete_user(user_id, uow)
-    return user
