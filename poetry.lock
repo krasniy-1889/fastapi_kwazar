@@ -105,6 +105,16 @@ files = [
 ]
 
 [[package]]
+name = "cuid"
+version = "0.4"
+description = "Fast, scalable unique ID generation"
+optional = false
+python-versions = "*"
+files = [
+    {file = "cuid-0.4.tar.gz", hash = "sha256:74eaba154916a2240405c3631acee708c263ef8fa05a86820b87d0f59f84e978"},
+]
+
+[[package]]
 name = "dnspython"
 version = "2.6.1"
 description = "DNS toolkit"
@@ -1531,4 +1541,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c62f5273327720347610e065c9f8f755de7aabbc9554b1a7de69b9c59a55865e"
+content-hash = "c41a71c5ed6064d1117d1fe955f24ffc389cb267c5c5b8eb3180d3c1a4cc6a3e"
