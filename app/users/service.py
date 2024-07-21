@@ -14,11 +14,11 @@ class UserService:
     async def add_user(
         self,
         uow: IUnitOfWork,
-        user: UserSchemaAdd,
+        user_schema: UserSchemaAdd,
     ) -> UserSchema:
-        user_dict = user.model_dump()
+        user_dict = user_schema.model_dump()
         async with uow:
-            exists = await uow.users.check_user(user.username, user.email)
+            exists = await uow.users.check_user(user_schema.username, user_schema.email)
             if exists:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -33,17 +33,17 @@ class UserService:
         self,
         id: int,
         uow: IUnitOfWork,
-        user: UserSchemaEdit,
+        user_schema: UserSchemaEdit,
     ) -> UserSchema:
         async with uow:
             exists = await uow.users.find_one(id=id)
             if not exists:
                 raise HTTPException(status_code=404, detail="Юзера не существует")
 
-            user_dict = user.model_dump(exclude_none=True)
-            res = await uow.users.edit_one(id, user_dict)
+            user_dict = user_schema.model_dump(exclude_none=True)
+            user = await uow.users.edit_one(id, user_dict)
             await uow.commit()
-            return res
+            return user
 
     async def delete_user(
         self,
