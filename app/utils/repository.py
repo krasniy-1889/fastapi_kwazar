@@ -1,8 +1,6 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.users.schema import UserSchema
-
 
 class AbstractRepository:
     model = None
